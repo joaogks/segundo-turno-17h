@@ -1,0 +1,21 @@
+{
+  "name": "tse-auditoria-2turno",
+  "version": "1.0.0",
+  "description": "Painel de Auditoria Estatística e Visualização de Dados do 2º Turno do TSE (Votos Totais, Pós-17h, Abstenção, Biometria e Detecção de Outliers)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node scripts/tse_etl.js --seed",
+    "import-csv": "node scripts/tse_etl.js --import-csv",
+    "import-logs": "node scripts/tse_etl.js --import-logs"
+  },
+  "keywords": [
+    "tse",
+    "auditoria",
+    "eleicoes",
+    "boletim-de-urna",
+    "logjez",
+    "biometria"
+  ],
+  "license": "MIT"
+}

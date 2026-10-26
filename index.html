@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auditoria Eleitoral TSE 2026 — Corte 17h00 BRT, 1º vs 2º Turno &amp; Biometria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-canvas: oklch(0.13 0.014 255);
+      --bg-surface: oklch(0.165 0.016 255);
+      --bg-elevated: oklch(0.20 0.018 255);
+      --bg-hover: oklch(0.225 0.022 255);
+      --border-subtle: oklch(0.245 0.018 255);
+      --border-strong: oklch(0.33 0.024 255);
+
+      --text-primary: oklch(0.96 0.008 255);
+      --text-secondary: oklch(0.77 0.020 255);
+      --text-muted: oklch(0.63 0.022 255);
+
+      --cand-13: oklch(0.65 0.21 18);
+      --cand-13-soft: oklch(0.23 0.06 18);
+      --cand-22: oklch(0.68 0.16 242);
+      --cand-22-soft: oklch(0.23 0.05 242);
+      --post-17h: oklch(0.79 0.16 78);
+      --post-17h-soft: oklch(0.22 0.05 78);
+      --bio-ok: oklch(0.74 0.16 162);
+      --bio-ok-soft: oklch(0.22 0.05 162);
+      --abst-hue: oklch(0.73 0.14 300);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    ::selection {
+      background-color: oklch(0.74 0.16 162 / 0.28);
+      color: var(--text-primary);
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      caret-color: var(--bio-ok);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4 {
+      text-wrap: balance;
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      text-wrap: pretty;
+    }
+
+    .num-tabular {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+
+    .surface-panel {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+    }
+
+    .hairline-grid > * {
+      border-color: var(--border-subtle);
+    }
+
+    /* Browser surfaces: custom scrollbars & focus rings */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: var(--bg-canvas);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: var(--border-strong);
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    button:focus-visible, select:focus-visible, input:focus-visible {
+      outline: 2px solid var(--bio-ok);
+      outline-offset: 2px;
+    }
+
+    /* Sortable table headers */
+    .sort-header, .state-sort-header {
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1);
+      position: relative;
+    }
+    .sort-header:hover, .state-sort-header:hover {
+      background-color: var(--bg-hover);
+      color: var(--text-primary);
+    }
+    .sort-active {
+      background-color: oklch(0.22 0.045 162) !important;
+      color: oklch(0.86 0.13 162) !important;
+      box-shadow: inset 0 -2px 0 0 var(--bio-ok);
+    }
+
+    /* Control inputs */
+    .ctrl-input {
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-primary);
+      transition: border-color 150ms ease;
+    }
+    .ctrl-input:hover {
+      border-color: var(--border-strong);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- TOP COMMAND SHELL -->
+  <header class="sticky top-0 z-30 border-b border-[var(--border-subtle)] bg-[var(--bg-canvas)]/95 backdrop-blur-md px-4 lg:px-8 py-3">
+    <div class="max-w-[1640px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-9 h-9 rounded-lg bg-[var(--bio-ok-soft)] border border-[var(--bio-ok)]/40 flex items-center justify-center text-[var(--bio-ok)] font-bold num-tabular text-xs">
+          2026
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-base sm:text-[17px] font-bold text-[var(--text-primary)]">
+              Auditoria Eleitoral TSE 2026 — 1º vs. 2º Turno, Corte 17h00 BRT e Biometria
+            </h1>
+            <span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold num-tabular bg-[var(--bio-ok-soft)] text-[var(--bio-ok)] border border-[var(--bio-ok)]/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-[var(--bio-ok)]"></span>
+              499.206 Seções Oficiais
+            </span>
+          </div>
+          <p class="text-xs text-[var(--text-secondary)]">
+            Lula (13) vs. Flávio Bolsonaro (22) · Base integral de Boletins de Urna e JSONs de Zona Eleitoral (28 UFs)
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <button id="btnExportCsv" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[var(--bio-ok)] hover:brightness-110 text-slate-950 font-bold text-xs transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span>Exportar Planilha CSV</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-[1640px] w-full mx-auto px-4 lg:px-8 py-5 space-y-5">
+
+    <!-- BARRA OPERACIONAL DE FILTROS E CHAVE 100% BIOMETRIA -->
+    <section class="surface-panel overflow-hidden">
+      <!-- Faixa Superior: Filtro Primário de Biometria 100% -->
+      <div class="p-4 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]/50 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="flex items-start sm:items-center gap-3.5">
+          <div class="w-9 h-9 rounded-lg bg-[var(--bio-ok-soft)] border border-[var(--bio-ok)]/30 flex items-center justify-center text-[var(--bio-ok)] shrink-0">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
+              <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
+              <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
+              <path d="M2 12a10 10 0 0 1 18-6"/>
+              <path d="M2 16h.01"/>
+              <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
+              <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/>
+              <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
+              <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
+            </svg>
+          </div>
+          <div>
+            <label for="chkApenasBiometria" class="text-sm font-bold text-[var(--text-primary)] cursor-pointer">
+              Isolar Urnas 100% Biometria (Zero Votos Sem Leitura da Digital)
+            </label>
+            <p class="text-xs text-[var(--text-secondary)]">
+              Filtra todo o painel, gráficos e tabelas para exibir apenas seções eleitorais onde <code class="num-tabular text-[var(--bio-ok)]">votos_sem_biometria = 0</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0">
+          <select id="selModoBiometria" class="ctrl-input text-xs font-semibold px-3 py-2">
+            <option value="todas">Todas as Urnas Apuradas (499.206)</option>
+            <option value="true">Somente Urnas 100% Biometria (0 sem digital)</option>
+            <option value="sem_bio">Somente Urnas com Liberação Sem Biometria (&ge; 1)</option>
+          </select>
+          <label class="relative inline-flex items-center cursor-pointer" title="Ativar filtro 100% Biometria">
+            <input type="checkbox" id="chkApenasBiometria" class="sr-only peer">
+            <div class="w-12 h-6 bg-[var(--bg-canvas)] border border-[var(--border-strong)] rounded-full peer peer-checked:after:translate-x-6 after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-[var(--text-primary)] after:rounded-full after:w-4.5 after:h-4.5 after:transition-all peer-checked:bg-[var(--bio-ok)] peer-checked:border-[var(--bio-ok)]"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Grade de Controles de Escopo -->
+      <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 items-end">
+        <div>
+          <label for="fUf" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">Estado (UF)</label>
+          <select id="fUf" class="ctrl-input w-full px-3 py-2 text-xs font-medium">
+            <option value="TODAS">Brasil Inteiro (28 UFs)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="fMunicipio" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">Município</label>
+          <select id="fMunicipio" class="ctrl-input w-full px-3 py-2 text-xs font-medium">
+            <option value="TODOS">Todos os Municípios</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="fModeloUrna" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">Modelo de Urna</label>
+          <select id="fModeloUrna" class="ctrl-input w-full px-3 py-2 text-xs font-medium">
+            <option value="TODOS">Todos (UE2013 a UE2022)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="fCorteHorario" class="block text-xs font-semibold text-[var(--post-17h)] mb-1.5">Corte de Horário (Fechamento BRT)</label>
+          <select id="fCorteHorario" class="ctrl-input w-full px-3 py-2 text-xs font-semibold border-[var(--post-17h)]/50">
+            <option value="todos">Todos os Horários de Fechamento</option>
+            <option value="ate_17h02">Fecharam Até 17h02 BRT (Sem fila)</option>
+            <option value="ate_17h05">Fecharam Até 17h05 BRT (Tolerância)</option>
+            <option value="apos_17h02">Fecharam Após 17h02 BRT (Com votos pós-17h)</option>
+            <option value="apos_17h05">Fecharam Após 17h05 BRT</option>
+            <option value="apos_17h15">Fecharam Após 17h15 BRT</option>
+            <option value="apos_17h30">Fecharam Após 17h30 BRT</option>
+            <option value="apos_18h00">Fecharam Após 18h00 BRT</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="fFiltroRapido" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">Auditoria de Anomalias</label>
+          <select id="fFiltroRapido" class="ctrl-input w-full px-3 py-2 text-xs font-medium">
+            <option value="nenhum">Sem filtro de anomalia</option>
+            <option value="cand2_perdeu">Flávio Bolsonaro (22) reduziu votos do 1º p/ 2ºT</option>
+            <option value="cand1_perdeu">Lula (13) reduziu votos do 1º p/ 2ºT</option>
+            <option value="desvio_escola">Desvio severo da mesma escola (&ge; 2,5&sigma;)</option>
+            <option value="abst_baixa">Abstenção extrema baixa (&le; 3%)</option>
+            <option value="alta_sem_bio">Mais de 22% votaram sem biometria</option>
+          </select>
+        </div>
+
+        <div class="flex gap-2">
+          <div class="flex-1">
+            <label for="fBusca" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">Buscar Cidade / Seção</label>
+            <input type="text" id="fBusca" placeholder="Ex: Caruaru, 102..." class="ctrl-input w-full px-3 py-2 text-xs" />
+          </div>
+          <button id="btnResetFilters" class="px-3 py-2 rounded-lg bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] border border-[var(--border-subtle)] text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition shrink-0">
+            Limpar
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SIGNATURE MOVE: MATRIZ TELEMÉTRICA DO CORTE DE 17H00 BRT (SEM CARTÕES ANINHADOS) -->
+    <section class="surface-panel overflow-hidden">
+      <div class="px-5 py-3.5 border-b border-[var(--border-subtle)] flex flex-col md:flex-row md:items-center justify-between gap-2 bg-[var(--bg-elevated)]/40">
+        <div class="flex items-center gap-2.5">
+          <svg class="w-4 h-4 text-[var(--post-17h)] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <h2 class="text-[15px] font-bold text-[var(--text-primary)]">
+            Raio-X do Total Depois das 17h00 (Horário Oficial de Brasília)
+          </h2>
+        </div>
+        <p class="text-xs text-[var(--text-secondary)]">
+          Comparativo direto dos votos registrados <strong>até 17h00</strong> vs. <strong>estritamente após 17h00</strong> e placar por faixa de encerramento.
+        </p>
+      </div>
+
+      <!-- Linha 1: 3 Colunas Arquiteturais Separadas por Hairlines (1px) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-[var(--border-subtle)]">
+        
+        <!-- Coluna 1: Votos Computados ATÉ 17h00 -->
+        <div class="p-5 flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-[var(--text-secondary)]">Votos Computados Até 17h00 BRT</span>
+              <span class="text-[11px] font-medium text-[var(--bio-ok)] num-tabular">Horário Regular</span>
+            </div>
+            <div class="text-2xl font-bold text-[var(--text-primary)] num-tabular mt-1" id="boxAntes17Total">0 votos</div>
+          </div>
+
+          <div class="space-y-2">
+            <!-- Barra Proporcional Antes das 17h -->
+            <div class="w-full h-2.5 rounded-full overflow-hidden flex bg-[var(--bg-canvas)]">
+              <div id="barAntes17Cand1" class="h-full bg-[var(--cand-13)] transition-all duration-300" style="width: 50%"></div>
+              <div id="barAntes17Cand2" class="h-full bg-[var(--cand-22)] transition-all duration-300" style="width: 50%"></div>
+            </div>
+            <div class="flex justify-between text-xs num-tabular">
+              <div>
+                <span class="inline-block w-2 h-2 rounded-full bg-[var(--cand-13)] mr-1"></span>
+                <span class="text-[var(--text-secondary)]">Lula (13):</span>
+                <strong id="boxAntes17Cand1" class="text-[var(--text-primary)] ml-1">0 (0%)</strong>
+              </div>
+              <div>
+                <span class="inline-block w-2 h-2 rounded-full bg-[var(--cand-22)] mr-1"></span>
+                <span class="text-[var(--text-secondary)]">Flávio (22):</span>
+                <strong id="boxAntes17Cand2" class="text-[var(--text-primary)] ml-1">0 (0%)</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coluna 2: Votos Computados ESTRITAMENTE DEPOIS das 17h00 -->
+        <div class="p-5 flex flex-col justify-between space-y-3 bg-[var(--post-17h-soft)]/35">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-[var(--post-17h)]">Votos Computados DEPOIS das 17h00 BRT</span>
+              <span id="boxApos17PctTotal" class="px-2 py-0.5 rounded text-[11px] font-semibold num-tabular bg-[var(--post-17h-soft)] text-[var(--post-17h)] border border-[var(--post-17h)]/30">0% do total</span>
+            </div>
+            <div class="text-2xl font-bold text-[var(--post-17h)] num-tabular mt-1" id="boxApos17Total">0 votos após 17h</div>
+          </div>
+
+          <div class="space-y-2">
+            <!-- Barra Proporcional Pós-17h -->
+            <div class="w-full h-2.5 rounded-full overflow-hidden flex bg-[var(--bg-canvas)]">
+              <div id="barApos17Cand1" class="h-full bg-[var(--cand-13)] transition-all duration-300" style="width: 62.46%"></div>
+              <div id="barApos17Cand2" class="h-full bg-[var(--cand-22)] transition-all duration-300" style="width: 37.54%"></div>
+            </div>
+            <div class="flex justify-between text-xs num-tabular">
+              <div>
+                <span class="inline-block w-2 h-2 rounded-full bg-[var(--cand-13)] mr-1"></span>
+                <span class="text-[var(--text-secondary)]">13 Pós-17h:</span>
+                <strong id="boxApos17Cand1" class="text-[var(--cand-13)] ml-1">0 (0%)</strong>
+              </div>
+              <div>
+                <span class="inline-block w-2 h-2 rounded-full bg-[var(--cand-22)] mr-1"></span>
+                <span class="text-[var(--text-secondary)]">22 Pós-17h:</span>
+                <strong id="boxApos17Cand2" class="text-[var(--cand-22)] ml-1">0 (0%)</strong>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-[var(--border-subtle)] flex justify-between items-center text-xs">
+              <span class="text-[var(--text-secondary)]">Saldo líquido exclusivo pós-17h:</span>
+              <strong id="boxApos17Diff" class="num-tabular text-[var(--post-17h)]">+0</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coluna 3: A Inversão pelo Horário de Encerramento da Urna (Até 17h05 vs Após 17h05) -->
+        <div class="p-5 flex flex-col justify-between space-y-3">
+          <div class="text-xs font-semibold text-[var(--text-secondary)]">
+            Placar Total das Urnas por Horário de Fechamento
+          </div>
+
+          <div class="space-y-2.5 text-xs">
+            <div class="pb-2.5 border-b border-[var(--border-subtle)]">
+              <div class="flex justify-between text-[var(--text-secondary)] mb-1">
+                <span>Urnas encerradas <strong>ATÉ 17h05 BRT</strong>:</span>
+                <strong id="resumoQtdAte1705" class="text-[var(--text-primary)] num-tabular">0</strong>
+              </div>
+              <div class="flex justify-between num-tabular font-semibold">
+                <span class="text-[var(--cand-22)]" id="resumoAte1705Cand2">Flávio 22: 0%</span>
+                <span class="text-[var(--cand-13)]" id="resumoAte1705Cand1">Lula 13: 0%</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[var(--text-secondary)] mb-1">
+                <span>Urnas encerradas <strong>APÓS 17h05 BRT</strong>:</span>
+                <strong id="resumoQtdApos1705" class="text-[var(--post-17h)] num-tabular">0</strong>
+              </div>
+              <div class="flex justify-between num-tabular font-semibold">
+                <span class="text-[var(--cand-13)]" id="resumoApos1705Cand1">Lula 13: 0%</span>
+                <span class="text-[var(--cand-22)]" id="resumoApos1705Cand2">Flávio 22: 0%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Linha 2: Régua Interativa de 6 Cortes de Horário de Encerramento (Clique para filtrar) -->
+      <div class="border-t border-[var(--border-subtle)] bg-[var(--bg-canvas)]/50 px-4 py-3">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-semibold text-[var(--text-secondary)]">
+            Filtrar por Faixa de Horário de Encerramento da Seção (Horário de Brasília):
+          </span>
+          <span class="text-[11px] text-[var(--text-muted)]">Clique em uma faixa para filtrar todo o painel</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2" id="timeCutoffCards">
+          <!-- Preenchido via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- PAINEL DE TELEMETRIA GERAL: 1º TURNO vs 2º TURNO, ABSTENÇÃO E BIOMETRIA (1 ÚNICO BLOCO DIVIDIDO POR HAIRLINES) -->
+    <section class="surface-panel grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-[var(--border-subtle)]">
+      
+      <!-- Célula 1: Lula (13) -->
+      <div class="p-4 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-[var(--cand-13)]">Lula (13) — 1ºT vs. 2ºT</span>
+          <span id="kpiPctCand1_2t" class="px-2 py-0.5 rounded text-xs font-bold num-tabular bg-[var(--cand-13-soft)] text-[var(--cand-13)]">0% no 2ºT</span>
+        </div>
+        <div class="text-xl font-bold text-[var(--text-primary)] num-tabular" id="kpiCand1_2t">0</div>
+        <div class="space-y-1 text-xs num-tabular pt-1 border-t border-[var(--border-subtle)]">
+          <div class="flex justify-between text-[var(--text-secondary)]">
+            <span>Votação 1º Turno:</span>
+            <strong id="kpiCand1_1t" class="text-[var(--text-primary)]">0</strong>
+          </div>
+          <div class="flex justify-between text-[var(--text-secondary)]">
+            <span>Crescimento (2ºT - 1ºT):</span>
+            <strong id="kpiDiffCand1" class="text-[var(--bio-ok)]">+0</strong>
+          </div>
+          <div class="flex justify-between text-[var(--text-secondary)]">
+            <span>Votos dele pós-17h:</span>
+            <strong id="kpiCand1Apos17Card" class="text-[var(--post-17h)]">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Célula 2: Flávio Bolsonaro (22) -->
+      <div class="p-4 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-[var(--cand-22)]">Flávio Bolsonaro (22) — 1ºT vs. 2ºT</span>
+          <span id="kpiPctCand2_2t" class="px-2 py-0.5 rounded text-xs font-bold num-tabular bg-[var(--cand-22-soft)] text-[var(--cand-22)]">0% no 2ºT</span>
+        </div>
+        <div class="text-xl font-bold text-[var(--text-primary)] num-tabular" id="kpiCand2_2t">0</div>
+        <div class="space-y-1 text-xs num-tabular pt-1 border-t border-[var(--border-subtle)]">
+          <div class="flex justify-between text-[var(--text-secondary)]">
+            <span>Votação 1º Turno:</span>
+            <strong id="kpiCand2_1t" class="text-[var(--text-primary)]">0</strong>
+          </div>
+          <div class="flex justify-between text-[var(--text-secondary)]">
+            <span>Crescimento (2ºT - 1ºT):</span>
+            <strong id="kpiDiffCand2" class="text-[var(--bio-ok)]">+0</strong>
+          </div>
+          <div class="flex justify-between text-[var(--text-secondary)]">
+            <span>Votos dele pós-17h:</span>
+            <strong id="kpiCand2Apos17Card" class="text-[var(--post-17h)]">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Célula 3: Abstenção 1ºT vs 2ºT -->
+      <div class="p-4 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-[var(--abst-hue)]">Taxa de Abstenção</span>
+          <span id="kpiUrnasCount" class="px-2 py-0.5 rounded text-xs font-semibold num-tabular bg-[var(--bg-elevated)] text-[var(--text-secondary)]">0 urnas</span>
+        </div>
+        <div class="text-xl font-bold text-[var(--text-primary)] num-tabular" id="kpiAbst2t">0% (0)</div>
+        <div class="space-y-1 text-xs num-tabular pt-1 border-t border-[var(--border-subtle)]">
+          <div class="flex justify-between text-[var(--text-secondary)]">
+            <span>Abstenção no 1º Turno:</span>
+            <strong id="kpiAbst1t" class="text-[var(--text-primary)]">0% (0)</strong>
+          </div>
+          <div class="flex justify-between text-[var(--text-secondary)]">
+            <span>Outros Cand. 1º Turno:</span>
+            <strong id="kpiOutros1t" class="text-[var(--text-primary)]">0</strong>
+          </div>
+          <div class="flex justify-between text-[var(--text-secondary)]">
+            <span>Seções com abstenção &le; 3%:</span>
+            <strong id="kpiUrnasAbstBaixa" class="text-[var(--abst-hue)]">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Célula 4: Auditoria de Biometria e Atrasos -->
+      <div class="p-4 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-[var(--bio-ok)]">Biometria &amp; Fechamento</span>
+          <span class="text-xs text-[var(--text-muted)] num-tabular">TSE 2026</span>
+        </div>
+        <div class="text-xl font-bold text-[var(--bio-ok)] num-tabular" id="kpiUrnas100Bio">0 urnas 100% Bio</div>
+        <div class="space-y-1 text-xs num-tabular pt-1 border-t border-[var(--border-subtle)]">
+          <div class="flex justify-between text-[var(--text-secondary)]">
+            <span>Eleitores sem biometria:</span>
+            <strong id="kpiVotosSemBio" class="text-[var(--post-17h)]">0 (0%)</strong>
+          </div>
+          <div class="flex justify-between text-[var(--text-secondary)]">
+            <span>Urnas encerradas &gt;17h02:</span>
+            <strong id="kpiUrnasApos17h" class="text-[var(--text-primary)]">0 urnas</strong>
+          </div>
+          <div class="flex justify-between text-[var(--text-secondary)]">
+            <span>Total de votos &gt;17h00:</span>
+            <strong id="kpiVotosApos17h" class="text-[var(--post-17h)]">0</strong>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- GRÁFICO ANALÍTICO INTERATIVO -->
+    <section class="surface-panel p-5">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[var(--border-subtle)]">
+        <div>
+          <h2 id="chartMainTitle" class="text-[15px] font-bold text-[var(--text-primary)]">
+            Votos Computados Depois das 17h00 por Estado (Lula 13 vs. Flávio Bolsonaro 22)
+          </h2>
+          <p id="chartMainSubtitle" class="text-xs text-[var(--text-secondary)] mt-0.5">
+            Selecione a dimensão analítica ao lado para inspecionar a distribuição por UF ou Município.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap gap-1.5" id="chartModeTabs">
+          <button data-mode="apos_17h" class="chart-tab-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[var(--post-17h)] text-slate-950 transition">
+            Total Pós-17h (13 vs 22)
+          </button>
+          <button data-mode="comp_1t_2t" class="chart-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] border border-[var(--border-subtle)] transition">
+            1º Turno vs. 2º Turno
+          </button>
+          <button data-mode="ganho_perda" class="chart-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] border border-[var(--border-subtle)] transition">
+            Variação (2ºT - 1ºT)
+          </button>
+          <button data-mode="abstencao" class="chart-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] border border-[var(--border-subtle)] transition">
+            Taxa de Abstenção
+          </button>
+          <button data-mode="modelos" class="chart-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] border border-[var(--border-subtle)] transition">
+            Por Modelo de Urna
+          </button>
+        </div>
+      </div>
+
+      <div class="relative w-full h-[350px] mt-4">
+        <canvas id="mainChartCanvas"></canvas>
+      </div>
+    </section>
+
+    <!-- TABELA 1: RESUMO POR ESTADO (UF) COM FILTRO DE PERÍODO E ORDENAÇÃO CRESCENTE / DECRESCENTE -->
+    <section class="surface-panel overflow-hidden">
+      <div class="px-5 py-4 border-b border-[var(--border-subtle)] space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-[15px] font-bold text-[var(--text-primary)]">
+              Tabela 1 — Resumo Consolidado por Estado (UF): 1º vs. 2º Turno, Pós-17h00 e Biometria
+            </h2>
+            <p class="text-xs text-[var(--text-secondary)] mt-0.5">
+              Escolha abaixo se deseja ver o <strong>Período Total</strong>, apenas os <strong>Votos Após 17h00</strong> ou <strong>Ambos Juntos</strong>. Clique em qualquer coluna para ordenar (▲ / ▼).
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="stateSortBadge" class="px-2.5 py-1 rounded-md bg-[var(--bio-ok-soft)] border border-[var(--bio-ok)]/30 text-[var(--bio-ok)] text-xs font-semibold num-tabular">
+              Ordenado por: Estado (UF) ▲
+            </span>
+            <button id="btnToggleStatesTable" class="px-3 py-1.5 rounded-lg bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] border border-[var(--border-subtle)] text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
+              Recolher / Expandir
+            </button>
+          </div>
+        </div>
+
+        <!-- Barra de Filtro de Período da Tabela 1 -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--border-subtle)]">
+          <div class="flex flex-wrap items-center gap-1.5" id="stateTableModeTabs">
+            <span class="text-xs font-semibold text-[var(--text-secondary)] mr-1">Exibir na Tabela 1:</span>
+            <button data-st-mode="ambos" class="st-mode-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[var(--bio-ok)] text-slate-950 transition">
+              Período Total + Após 17h (Completa)
+            </button>
+            <button data-st-mode="periodo_total" class="st-mode-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] border border-[var(--border-subtle)] transition">
+              Somente Período Total (Geral)
+            </button>
+            <button data-st-mode="apos_17h" class="st-mode-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--post-17h)] border border-[var(--border-subtle)] transition">
+              Somente Votos Após 17h00
+            </button>
+            <button data-st-mode="antes_17h" class="st-mode-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] border border-[var(--border-subtle)] transition">
+              Somente Votos Até 17h00
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <label for="fCorteHorarioTabela1" class="text-xs font-semibold text-[var(--post-17h)]">Filtrar Urnas por Fechamento:</label>
+            <select id="fCorteHorarioTabela1" class="ctrl-input px-2.5 py-1.5 text-xs font-semibold border-[var(--post-17h)]/40">
+              <option value="todos">Todas as Urnas (Qualquer Horário)</option>
+              <option value="ate_17h02">Urnas que Fecharam Até 17h02 BRT</option>
+              <option value="ate_17h05">Urnas que Fecharam Até 17h05 BRT</option>
+              <option value="apos_17h02">Urnas que Fecharam Após 17h02 BRT</option>
+              <option value="apos_17h05">Urnas que Fecharam Após 17h05 BRT</option>
+              <option value="apos_17h15">Urnas que Fecharam Após 17h15 BRT</option>
+              <option value="apos_17h30">Urnas que Fecharam Após 17h30 BRT</option>
+              <option value="apos_18h00">Urnas que Fecharam Após 18h00 BRT</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="statesTableWrapper" class="overflow-x-auto max-h-[520px] custom-scrollbar">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead class="sticky top-0 z-10 bg-[var(--bg-canvas)] border-b border-[var(--border-subtle)] text-[11px] uppercase tracking-wider text-[var(--text-secondary)] font-semibold">
+            <tr>
+              <th data-state-sort="label" class="state-sort-header py-3 px-3.5">
+                Estado (UF) <span class="state-sort-icon ml-1 text-[var(--bio-ok)]">▲</span>
+              </th>
+              <th data-state-sort="urnas" class="state-sort-header py-3 px-2.5 text-right">
+                Urnas <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+              <th data-col-group="total" data-state-sort="votos_cand_1" class="state-sort-header py-3 px-2.5 text-right text-[var(--cand-13)]">
+                Lula 1ºT &rarr; 2ºT <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+              <th data-col-group="total" data-state-sort="votos_cand_2" class="state-sort-header py-3 px-2.5 text-right text-[var(--cand-22)]">
+                Flávio 1ºT &rarr; 2ºT <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+              <th data-col-group="total" data-state-sort="pct_cand_1" class="state-sort-header py-3 px-2.5 text-center">
+                Placar Geral 2ºT <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+              <th data-col-group="antes17" data-state-sort="votos_antes_17h" class="state-sort-header hidden py-3 px-2.5 text-right text-[var(--bio-ok)]">
+                Total Até 17h <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+              <th data-col-group="antes17" data-state-sort="votos_cand_1_antes_17h" class="state-sort-header hidden py-3 px-2.5 text-right text-[var(--cand-13)]">
+                Lula (13) Até 17h <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+              <th data-col-group="antes17" data-state-sort="votos_cand_2_antes_17h" class="state-sort-header hidden py-3 px-2.5 text-right text-[var(--cand-22)]">
+                Flávio (22) Até 17h <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+              <th data-col-group="antes17" data-state-sort="pct_cand_1_antes_17h" class="state-sort-header hidden py-3 px-2.5 text-center text-[var(--bio-ok)]">
+                Placar Até 17h <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+              <th data-col-group="apos17" data-state-sort="votos_apos_17h" class="state-sort-header py-3 px-2.5 text-right bg-[var(--post-17h-soft)]/30 text-[var(--post-17h)]">
+                Total Votos &gt;17h <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+              <th data-col-group="apos17" data-state-sort="votos_cand_1_apos_17h" class="state-sort-header py-3 px-2.5 text-right bg-[var(--post-17h-soft)]/30 text-[var(--cand-13)]">
+                Lula (13) &gt;17h <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+              <th data-col-group="apos17" data-state-sort="votos_cand_2_apos_17h" class="state-sort-header py-3 px-2.5 text-right bg-[var(--post-17h-soft)]/30 text-[var(--cand-22)]">
+                Flávio (22) &gt;17h <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+              <th data-col-group="apos17" data-state-sort="pct_cand_1_apos_17h" class="state-sort-header py-3 px-2.5 text-center bg-[var(--post-17h-soft)]/30 text-[var(--post-17h)]">
+                Placar Só &gt;17h <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+              <th data-state-sort="taxa_abstencao" class="state-sort-header py-3 px-2.5 text-right">
+                Abstenção 2ºT <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+              <th data-state-sort="urnas_100_bio" class="state-sort-header py-3 px-2.5 text-right text-[var(--bio-ok)]">
+                Biometria (100% Bio) <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+              <th data-state-sort="pct_sem_biometria" class="state-sort-header py-3 px-3 text-right text-[var(--post-17h)]">
+                % Sem Bio <span class="state-sort-icon ml-1 text-[var(--text-muted)]">↕</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="statesSummaryBody" class="divide-y divide-[var(--border-subtle)]">
+            <!-- Preenchido via JS -->
+          </tbody>
+          <tfoot id="statesSummaryFoot" class="sticky bottom-0 z-10 bg-[var(--bg-canvas)] border-t-2 border-[var(--bio-ok)]/50 font-bold text-xs">
+            <!-- Total de cada coluna preenchido via JS -->
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+    <!-- TABELA 2: AUDITORIA POR SEÇÃO ELEITORAL (499.206 URNAS) -->
+    <section id="secaoTableSection" class="surface-panel overflow-hidden">
+      <div class="p-5 border-b border-[var(--border-subtle)] space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2.5">
+              <h2 class="text-[15px] font-bold text-[var(--text-primary)]">
+                Tabela 2 — Auditoria por Seção Eleitoral (Urna) Separada por Estado
+              </h2>
+              <span id="tableTotalBadge" class="px-2.5 py-0.5 text-xs rounded-md bg-[var(--bio-ok-soft)] text-[var(--bio-ok)] font-bold num-tabular border border-[var(--bio-ok)]/30">
+                0 urnas
+              </span>
+            </div>
+            <p class="text-xs text-[var(--text-secondary)] mt-0.5">
+              Clique em <strong>Biometria</strong>, <strong>Total &gt;17h</strong>, <strong>Hora Fechou</strong> ou qualquer outra coluna para alternar entre ordem <strong>Decrescente (▼ Maior &rarr; Menor)</strong> e <strong>Crescente (▲ Menor &rarr; Maior)</strong>.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button id="btnFlipSortDir" class="px-3 py-1.5 rounded-lg bg-[var(--bio-ok-soft)] hover:brightness-110 border border-[var(--bio-ok)]/40 text-[var(--bio-ok)] text-xs font-bold num-tabular transition flex items-center gap-1.5" title="Clique para inverter entre Crescente e Decrescente">
+              <span id="activeSortLabel">Ordenado por: Total &gt;17h (Decrescente ▼)</span>
+            </button>
+
+            <label class="inline-flex items-center gap-2 text-xs text-[var(--text-secondary)] cursor-pointer bg-[var(--bg-canvas)] px-3 py-1.5 rounded-lg border border-[var(--border-subtle)]">
+              <input type="checkbox" id="chkAgruparPorUf" class="rounded accent-[var(--bio-ok)]" />
+              <span>Fixar ordem A-Z de UF</span>
+            </label>
+
+            <select id="selPageSize" class="ctrl-input px-2.5 py-1.5 text-xs font-medium">
+              <option value="30">30 seções / pág.</option>
+              <option value="60">60 seções / pág.</option>
+              <option value="100">100 seções / pág.</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Seletor de Abas de Estados (UFs) -->
+        <div>
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+            Filtrar Seções por Unidade Federativa (UF):
+          </div>
+          <div id="stateTabsBar" class="flex flex-wrap gap-1.5"></div>
+        </div>
+      </div>
+
+      <!-- Grade de Seções Eleitorais -->
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-[var(--bg-canvas)] border-b border-[var(--border-subtle)] text-[11px] uppercase tracking-wider text-[var(--text-secondary)] font-semibold">
+              <th data-sort="uf" data-label="Estado / Município" class="sort-header py-3 px-3.5">
+                <div class="flex items-center justify-between gap-1">
+                  <span>Estado / Município</span>
+                  <span class="urna-sort-icon text-[var(--text-muted)]">↕</span>
+                </div>
+              </th>
+              <th data-sort="secao" data-label="Zona / Seção" class="sort-header py-3 px-2.5">
+                <div class="flex items-center justify-between gap-1">
+                  <span>Zona / Seção</span>
+                  <span class="urna-sort-icon text-[var(--text-muted)]">↕</span>
+                </div>
+              </th>
+              <th data-sort="modelo_urna" data-label="Modelo da Urna" class="sort-header py-3 px-2.5">
+                <div class="flex items-center justify-between gap-1">
+                  <span>Urna</span>
+                  <span class="urna-sort-icon text-[var(--text-muted)]">↕</span>
+                </div>
+              </th>
+              <th data-sort="votos_cand_1" data-label="Votos Lula (13)" class="sort-header py-3 px-2.5 text-right text-[var(--cand-13)]">
+                <div>Lula (13) <span class="urna-sort-icon ml-0.5 text-[var(--text-muted)]">↕</span></div>
+                <span class="text-[10px] font-normal text-[var(--text-muted)] normal-case">1ºT &rarr; 2ºT (Saldo)</span>
+              </th>
+              <th data-sort="votos_cand_2" data-label="Votos Flávio (22)" class="sort-header py-3 px-2.5 text-right text-[var(--cand-22)]">
+                <div>Flávio (22) <span class="urna-sort-icon ml-0.5 text-[var(--text-muted)]">↕</span></div>
+                <span class="text-[10px] font-normal text-[var(--text-muted)] normal-case">1ºT &rarr; 2ºT (Saldo)</span>
+              </th>
+              <th data-sort="segundos_apos_17h" data-label="Hora Fechou (BRT)" class="sort-header py-3 px-2.5 text-right bg-[var(--post-17h-soft)]/25 text-[var(--post-17h)]">
+                <div>Hora Fechou <span class="urna-sort-icon ml-0.5 text-[var(--text-muted)]">↕</span></div>
+                <span class="text-[10px] font-normal text-[var(--text-muted)] normal-case">Brasília (BRT)</span>
+              </th>
+              <th data-sort="votos_apos_17h" data-label="Total Votos >17h" class="sort-header sort-active py-3 px-2.5 text-right bg-[var(--post-17h-soft)]/25 text-[var(--post-17h)]">
+                <div>Total &gt;17h <span class="urna-sort-icon ml-0.5 text-[var(--bio-ok)]">▼</span></div>
+                <span class="text-[10px] font-normal text-[var(--text-muted)] normal-case">13 vs. 22 pós-17h</span>
+              </th>
+              <th data-sort="taxa_abstencao" data-label="Taxa de Abstenção" class="sort-header py-3 px-2.5 text-right">
+                <div>Abstenção <span class="urna-sort-icon ml-0.5 text-[var(--text-muted)]">↕</span></div>
+                <span class="text-[10px] font-normal text-[var(--text-muted)] normal-case">1ºT &rarr; 2ºT</span>
+              </th>
+              <th data-sort="votos_sem_biometria" data-label="Biometria (Votos Sem Digital)" class="sort-header py-3 px-2.5 text-center">
+                <div>Biometria <span class="urna-sort-icon ml-0.5 text-[var(--text-muted)]">↕</span></div>
+                <span class="text-[10px] font-normal text-[var(--text-muted)] normal-case">Clique p/ ordenar</span>
+              </th>
+              <th data-sort="z_score_escola" data-label="Desvio da Média da Escola" class="sort-header py-3 px-2.5 text-right">
+                <div>Média Escola <span class="urna-sort-icon ml-0.5 text-[var(--text-muted)]">↕</span></div>
+                <span class="text-[10px] font-normal text-[var(--text-muted)] normal-case">Desvio (&sigma;)</span>
+              </th>
+              <th class="py-3 px-2.5 text-center">Inspeção</th>
+            </tr>
+          </thead>
+          <tbody id="urnasTableBody" class="divide-y divide-[var(--border-subtle)]"></tbody>
+        </table>
+      </div>
+
+      <!-- Rodapé de Paginação -->
+      <div class="px-5 py-3.5 bg-[var(--bg-canvas)] border-t border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--text-secondary)]">
+        <div id="paginationInfo" class="num-tabular">Mostrando 0 de 0 urnas</div>
+        <div class="flex items-center gap-2">
+          <button id="btnPrevPage" class="px-3 py-1.5 rounded-lg bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] border border-[var(--border-subtle)] disabled:opacity-40 text-[var(--text-primary)] font-semibold transition">
+            &larr; Anterior
+          </button>
+          <span id="pageIndicator" class="px-3 py-1 num-tabular text-[var(--text-primary)] font-semibold">Página 1 / 1</span>
+          <button id="btnNextPage" class="px-3 py-1.5 rounded-lg bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] border border-[var(--border-subtle)] disabled:opacity-40 text-[var(--text-primary)] font-semibold transition">
+            Próxima &rarr;
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DE AUDITORIA DE SALA E COMPARAÇÃO COM A MESMA ESCOLA -->
+  <div id="urnaDetailModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+    <div class="surface-panel max-w-4xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-6 space-y-5 border-[var(--border-strong)]">
+      <div class="flex items-start justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
+        <div>
+          <span id="modalUrnaModelo" class="px-2.5 py-0.5 rounded text-xs num-tabular bg-[var(--bio-ok-soft)] text-[var(--bio-ok)] font-bold">UE2020</span>
+          <h3 id="modalUrnaTitle" class="text-lg font-bold text-[var(--text-primary)] mt-1.5">
+            UF - Município | Zona / Seção
+          </h3>
+          <p id="modalUrnaEscola" class="text-xs text-[var(--text-secondary)]">Local de Votação</p>
+        </div>
+        <button id="btnCloseUrnaModal" class="px-3 py-1.5 rounded-lg bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] border border-[var(--border-subtle)] text-[var(--text-primary)] text-xs font-bold">
+          Fechar
+        </button>
+      </div>
+
+      <div id="modalUrnaStatsGrid" class="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border-subtle)] border border-[var(--border-subtle)] rounded-lg bg-[var(--bg-canvas)] text-xs"></div>
+
+      <div class="border border-[var(--border-subtle)] rounded-lg overflow-hidden bg-[var(--bg-canvas)]">
+        <div class="px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]/40">
+          <h4 class="text-xs font-bold text-[var(--text-primary)]">
+            Comparativo com as Demais Seções desta Mesma Escola (Mesmo Prédio)
+          </h4>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="border-b border-[var(--border-subtle)] text-[var(--text-secondary)] text-[11px] uppercase">
+                <th class="py-2.5 px-3">Seção</th>
+                <th class="py-2.5 px-2.5">Urna</th>
+                <th class="py-2.5 px-2.5 text-right text-[var(--cand-13)]">Lula (1ºT &rarr; 2ºT)</th>
+                <th class="py-2.5 px-2.5 text-right text-[var(--cand-22)]">Flávio (1ºT &rarr; 2ºT)</th>
+                <th class="py-2.5 px-2.5 text-right text-[var(--post-17h)]">Fechamento BRT / Pós-17h</th>
+                <th class="py-2.5 px-2.5 text-right">Abstenção 2ºT</th>
+                <th class="py-2.5 px-3 text-right">Biometria</th>
+              </tr>
+            </thead>
+            <tbody id="modalSchoolSiblingsBody" class="divide-y divide-[var(--border-subtle)]"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./static-engine.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
