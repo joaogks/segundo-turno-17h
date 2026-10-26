@@ -22,7 +22,7 @@ function formatTimeBrt(totalSec) {
 function runCalcApos17h() {
   const t0 = Date.now();
   const db = getDb();
-  console.log('Calculando votos após as 17h00 (Horário de Brasília) para todas as 499.206 urnas de 2026...');
+  console.log('Calculando votos <17h e >17h (Horário de Brasília) para todas as urnas de 2026...');
 
   const rows = db.prepare(`
     SELECT id, uf, horario_abertura, horario_encerramento,
@@ -53,17 +53,16 @@ function runCalcApos17h() {
       const openP = parseTimeSec(r.horario_abertura);
       const closeP = parseTimeSec(r.horario_encerramento);
 
-      // Determina o fuso da urna para converter o encerramento para Horário de Brasília (17:00 BRT)
       let offsetHoursToBrt = 0;
       if (r.uf === 'AC') {
-        offsetHoursToBrt = 2; // UTC-5 -> BRT (UTC-3)
+        offsetHoursToBrt = 2;
       } else if (r.uf === 'RO' || r.uf === 'RR' || r.uf === 'MT' || r.uf === 'MS') {
-        offsetHoursToBrt = 1; // UTC-4 -> BRT (UTC-3)
+        offsetHoursToBrt = 1;
       } else if (r.uf === 'AM') {
-        // No Amazonas há municípios UTC-5 (abrem 06h) e UTC-4 (abrem 07h)
         offsetHoursToBrt = (openP && openP.hh <= 6) ? 2 : 1;
       }
 
+      const openSecBrt = openP ? (openP.sec + offsetHoursToBrt * 3600) : (8 * 3600);
       const closeSecBrt = closeP ? (closeP.sec + offsetHoursToBrt * 3600) : (17 * 3600);
       const horarioBrt = formatTimeBrt(closeSecBrt);
       const sec17hBrt = 17 * 3600; // 61200s
@@ -73,20 +72,24 @@ function runCalcApos17h() {
       let cand1Apos17 = 0;
       let cand2Apos17 = 0;
 
-      // Considera votos após 17h quando a urna fechou a partir de 17:02:00 BRT (> 120s após as 17h00,
-      // pois até 17:01:59 é o tempo do mesário digitar a senha de encerramento sem fila)
       if (segundosApos17h >= 120 && r.comparecimento > 0) {
-        // Cada eleitor na fila pós-17h leva em média ~38 segundos
+        const segundosAntes17h = Math.max(3600, sec17hBrt - Math.min(openSecBrt, sec17hBrt - 3600));
         const efetivoSegundosFila = segundosApos17h - 60;
-        votosApos17 = Math.min(r.comparecimento, Math.max(1, Math.round(efetivoSegundosFila / 38)));
+
+        // Taxa por fila (1 eleitor a cada ~38s), mas limitada à proporção temporal real do dia
+        // (ex.: 9h antes das 17h vs horas após as 17h, com peso de fila de 1.35x no pós-17h)
+        const estFila = Math.round(efetivoSegundosFila / 38);
+        const timeShareMax = (efetivoSegundosFila * 1.35) / (segundosAntes17h + efetivoSegundosFila * 1.35);
+        const maxPorTempo = Math.max(1, Math.round(r.comparecimento * timeShareMax));
+
+        votosApos17 = Math.min(estFila, maxPorTempo, Math.max(1, r.comparecimento - 1));
 
         if (r.votos_nominais > 0) {
           const share1 = r.votos_cand_1 / r.votos_nominais;
-          const share2 = r.votos_cand_2 / r.votos_nominais;
           const validRatio = r.votos_nominais / r.comparecimento;
-          const nominaisApos17 = Math.round(votosApos17 * validRatio);
-          cand1Apos17 = Math.round(nominaisApos17 * share1);
-          cand2Apos17 = Math.max(0, nominaisApos17 - cand1Apos17);
+          const nominaisApos17 = Math.min(r.votos_nominais - 1, Math.max(1, Math.round(votosApos17 * validRatio)));
+          cand1Apos17 = Math.min(r.votos_cand_1, Math.round(nominaisApos17 * share1));
+          cand2Apos17 = Math.min(r.votos_cand_2, Math.max(0, nominaisApos17 - cand1Apos17));
         }
 
         urnasApos17++;
@@ -114,8 +117,6 @@ function runCalcApos17h() {
     db.exec('ROLLBACK;');
     throw e;
   }
-
-  db.exec('CREATE INDEX IF NOT EXISTS idx_urnas_seg_apos17h ON urnas(segundos_apos_17h);');
 
   console.log(`Concluído em ${((Date.now() - t0) / 1000).toFixed(1)}s!`);
   console.log({
