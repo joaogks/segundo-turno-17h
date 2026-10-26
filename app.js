@@ -47,11 +47,11 @@ const SORT_LABELS_STATE = {
   votos_cand_1: 'Votos Lula (13)',
   votos_cand_2: 'Votos Flávio (22)',
   pct_cand_1: 'Placar Geral 2ºT (%)',
-  votos_antes_17h: 'Total Votos Até 17h',
-  votos_cand_1_antes_17h: 'Lula (13) Até 17h',
-  votos_cand_2_antes_17h: 'Flávio (22) Até 17h',
-  pct_cand_1_antes_17h: 'Placar Até 17h (%)',
-  votos_apos_17h: 'Total Votos >17h',
+  votos_antes_17h: 'Votos <17h (13 / 22)',
+  votos_cand_1_antes_17h: 'Lula (13) <17h',
+  votos_cand_2_antes_17h: 'Flávio (22) <17h',
+  pct_cand_1_antes_17h: 'Placar Só <17h (%)',
+  votos_apos_17h: 'Votos >17h (13 / 22)',
   votos_cand_1_apos_17h: 'Lula (13) >17h',
   votos_cand_2_apos_17h: 'Flávio (22) >17h',
   pct_cand_1_apos_17h: 'Placar Só >17h (%)',
@@ -636,13 +636,17 @@ function renderStatesSummaryTable(dash) {
   const tbody = document.getElementById('statesSummaryBody');
   const mode = state.stateTableMode || 'ambos';
   const showTotal = (mode === 'ambos' || mode === 'periodo_total');
-  const showApos17 = (mode === 'ambos' || mode === 'apos_17h');
-  const showAntes17 = (mode === 'antes_17h');
+  const showCompAntes17 = (mode === 'ambos' || mode === 'antes_17h');
+  const showCompApos17 = (mode === 'ambos' || mode === 'apos_17h');
+  const showAntes17Det = (mode === 'antes_17h');
+  const showApos17Det = (mode === 'apos_17h');
 
   // Mostrar/ocultar cabeçalhos conforme o modo selecionado
   document.querySelectorAll('th[data-col-group="total"]').forEach(th => th.classList.toggle('hidden', !showTotal));
-  document.querySelectorAll('th[data-col-group="apos17"]').forEach(th => th.classList.toggle('hidden', !showApos17));
-  document.querySelectorAll('th[data-col-group="antes17"]').forEach(th => th.classList.toggle('hidden', !showAntes17));
+  document.querySelectorAll('th[data-col-group="comp_antes17"]').forEach(th => th.classList.toggle('hidden', !showCompAntes17));
+  document.querySelectorAll('th[data-col-group="comp_apos17"]').forEach(th => th.classList.toggle('hidden', !showCompApos17));
+  document.querySelectorAll('th[data-col-group="antes17_det"]').forEach(th => th.classList.toggle('hidden', !showAntes17Det));
+  document.querySelectorAll('th[data-col-group="apos17_det"]').forEach(th => th.classList.toggle('hidden', !showApos17Det));
 
   const enrichedRows = dash.porLocalidade.map(r => {
     const votos_cand_1_antes_17h = Math.max(0, (r.votos_cand_1 || 0) - (r.votos_cand_1_apos_17h || 0));
@@ -731,32 +735,43 @@ function renderStatesSummaryTable(dash) {
         </td>
     ` : '';
 
-    const colsAntes17Html = showAntes17 ? `
-        <td class="py-2.5 px-2.5 text-right num-tabular font-bold text-[var(--bio-ok)]">
-          ${fmtNum.format(r.votos_antes_17h)}
+    const colsCompAntes17Html = showCompAntes17 ? `
+        <td class="py-2.5 px-2.5 text-center num-tabular bg-[var(--bio-ok-soft)]/10">
+          <div class="whitespace-nowrap text-[11px]">
+            <span class="text-[var(--cand-13)] font-bold">${fmtNum.format(r.votos_cand_1_antes_17h)}</span>
+            <span class="text-[var(--text-muted)] mx-0.5">/</span>
+            <span class="text-[var(--cand-22)] font-bold">${fmtNum.format(r.votos_cand_2_antes_17h)}</span>
+          </div>
+          <div class="text-[10px] text-[var(--text-muted)] whitespace-nowrap">
+            Tot &lt;17h: ${fmtNum.format(r.votos_antes_17h)}
+          </div>
         </td>
-        <td class="py-2.5 px-2.5 text-right num-tabular font-bold text-[var(--cand-13)]">
-          ${fmtNum.format(r.votos_cand_1_antes_17h)}
-        </td>
-        <td class="py-2.5 px-2.5 text-right num-tabular font-bold text-[var(--cand-22)]">
-          ${fmtNum.format(r.votos_cand_2_antes_17h)}
-        </td>
-        <td class="py-2.5 px-2.5 text-center num-tabular text-[11px]">
+        <td class="py-2.5 px-2.5 text-center num-tabular text-[11px] bg-[var(--bio-ok-soft)]/10">
           <span class="text-[var(--cand-13)] font-bold">${fmtPct(r.pct_cand_1_antes_17h)}</span>
           <span class="text-[var(--text-muted)] mx-0.5">/</span>
           <span class="text-[var(--cand-22)] font-bold">${fmtPct(r.pct_cand_2_antes_17h)}</span>
         </td>
     ` : '';
 
-    const colsApos17Html = showApos17 ? `
-        <td class="py-2.5 px-2.5 text-right num-tabular font-bold bg-[var(--post-17h-soft)]/15 text-[var(--post-17h)]">
-          ${fmtNum.format(r.votos_apos_17h)} <span class="text-[10px] text-[var(--text-muted)] font-normal">(${r.pct_apos_17h}%)</span>
+    const colsAntes17DetHtml = showAntes17Det ? `
+        <td class="py-2.5 px-2.5 text-right num-tabular font-bold text-[var(--cand-13)]">
+          ${fmtNum.format(r.votos_cand_1_antes_17h)}
         </td>
-        <td class="py-2.5 px-2.5 text-right num-tabular font-bold bg-[var(--post-17h-soft)]/15 text-[var(--cand-13)]">
-          ${fmtNum.format(r.votos_cand_1_apos_17h)}
+        <td class="py-2.5 px-2.5 text-right num-tabular font-bold text-[var(--cand-22)]">
+          ${fmtNum.format(r.votos_cand_2_antes_17h)}
         </td>
-        <td class="py-2.5 px-2.5 text-right num-tabular font-bold bg-[var(--post-17h-soft)]/15 text-[var(--cand-22)]">
-          ${fmtNum.format(r.votos_cand_2_apos_17h)}
+    ` : '';
+
+    const colsCompApos17Html = showCompApos17 ? `
+        <td class="py-2.5 px-2.5 text-center num-tabular bg-[var(--post-17h-soft)]/15">
+          <div class="whitespace-nowrap text-[11px]">
+            <span class="text-[var(--cand-13)] font-bold">${fmtNum.format(r.votos_cand_1_apos_17h)}</span>
+            <span class="text-[var(--text-muted)] mx-0.5">/</span>
+            <span class="text-[var(--cand-22)] font-bold">${fmtNum.format(r.votos_cand_2_apos_17h)}</span>
+          </div>
+          <div class="text-[10px] text-[var(--post-17h)] whitespace-nowrap">
+            Tot &gt;17h: ${fmtNum.format(r.votos_apos_17h)} <span class="text-[var(--text-muted)]">(${r.pct_apos_17h}%)</span>
+          </div>
         </td>
         <td class="py-2.5 px-2.5 text-center num-tabular text-[11px] bg-[var(--post-17h-soft)]/15">
           <span class="text-[var(--cand-13)] font-bold">${fmtPct(r.pct_cand_1_apos_17h)}</span>
@@ -765,13 +780,24 @@ function renderStatesSummaryTable(dash) {
         </td>
     ` : '';
 
+    const colsApos17DetHtml = showApos17Det ? `
+        <td class="py-2.5 px-2.5 text-right num-tabular font-bold bg-[var(--post-17h-soft)]/15 text-[var(--cand-13)]">
+          ${fmtNum.format(r.votos_cand_1_apos_17h)}
+        </td>
+        <td class="py-2.5 px-2.5 text-right num-tabular font-bold bg-[var(--post-17h-soft)]/15 text-[var(--cand-22)]">
+          ${fmtNum.format(r.votos_cand_2_apos_17h)}
+        </td>
+    ` : '';
+
     return `
       <tr data-loc="${r.label}" class="state-summary-row hover:bg-[var(--bg-hover)] cursor-pointer transition">
         <td class="py-2.5 px-3.5 font-bold text-[var(--text-primary)]">${nomeCompleto}</td>
         <td class="py-2.5 px-2.5 text-right num-tabular text-[var(--text-secondary)]">${fmtNum.format(r.active_urnas)}</td>
         ${colsTotalHtml}
-        ${colsAntes17Html}
-        ${colsApos17Html}
+        ${colsCompAntes17Html}
+        ${colsAntes17DetHtml}
+        ${colsCompApos17Html}
+        ${colsApos17DetHtml}
         <td class="py-2.5 px-2.5 text-right num-tabular text-[var(--abst-hue)] font-medium">
           ${fmtPct(r.active_taxa_abstencao)} <span class="text-[10px] text-[var(--text-muted)] font-normal">(${fmtNum.format(r.active_abstencoes)})</span>
         </td>
@@ -831,37 +857,57 @@ function renderStatesSummaryTable(dash) {
     ` : '';
 
     const totAntes17 = (k.votos_cand_1_antes_17h || 0) + (k.votos_cand_2_antes_17h || 0);
-    const footAntes17Html = showAntes17 ? `
-        <td class="py-3 px-2.5 text-right num-tabular font-bold text-[var(--bio-ok)]">
-          ${fmtNum.format(totAntes17)}
+    const footCompAntes17Html = showCompAntes17 ? `
+        <td class="py-3 px-2.5 text-center num-tabular bg-[var(--bio-ok-soft)]/20">
+          <div class="whitespace-nowrap text-[11px]">
+            <span class="text-[var(--cand-13)] font-bold">${fmtNum.format(k.votos_cand_1_antes_17h)}</span>
+            <span class="text-[var(--text-muted)] mx-0.5">/</span>
+            <span class="text-[var(--cand-22)] font-bold">${fmtNum.format(k.votos_cand_2_antes_17h)}</span>
+          </div>
+          <div class="text-[10px] text-[var(--bio-ok)] whitespace-nowrap">
+            Tot &lt;17h: ${fmtNum.format(totAntes17)}
+          </div>
         </td>
-        <td class="py-3 px-2.5 text-right num-tabular font-bold text-[var(--cand-13)]">
-          ${fmtNum.format(k.votos_cand_1_antes_17h)}
-        </td>
-        <td class="py-3 px-2.5 text-right num-tabular font-bold text-[var(--cand-22)]">
-          ${fmtNum.format(k.votos_cand_2_antes_17h)}
-        </td>
-        <td class="py-3 px-2.5 text-center num-tabular text-[11px]">
+        <td class="py-3 px-2.5 text-center num-tabular text-[11px] bg-[var(--bio-ok-soft)]/20">
           <span class="text-[var(--cand-13)] font-bold">${fmtPct(k.pct_cand_1_antes_17h)}</span>
           <span class="text-[var(--text-muted)] mx-0.5">/</span>
           <span class="text-[var(--cand-22)] font-bold">${fmtPct(k.pct_cand_2_antes_17h)}</span>
         </td>
     ` : '';
 
-    const footApos17Html = showApos17 ? `
-        <td class="py-3 px-2.5 text-right num-tabular font-bold bg-[var(--post-17h-soft)]/30 text-[var(--post-17h)]">
-          ${fmtNum.format(k.votos_apos_17h)} <span class="text-[10px] text-[var(--text-secondary)] font-normal">(${k.pct_apos_17h}%)</span>
+    const footAntes17DetHtml = showAntes17Det ? `
+        <td class="py-3 px-2.5 text-right num-tabular font-bold text-[var(--cand-13)]">
+          ${fmtNum.format(k.votos_cand_1_antes_17h)}
         </td>
-        <td class="py-3 px-2.5 text-right num-tabular font-bold bg-[var(--post-17h-soft)]/30 text-[var(--cand-13)]">
-          ${fmtNum.format(k.votos_cand_1_apos_17h)}
+        <td class="py-3 px-2.5 text-right num-tabular font-bold text-[var(--cand-22)]">
+          ${fmtNum.format(k.votos_cand_2_antes_17h)}
         </td>
-        <td class="py-3 px-2.5 text-right num-tabular font-bold bg-[var(--post-17h-soft)]/30 text-[var(--cand-22)]">
-          ${fmtNum.format(k.votos_cand_2_apos_17h)}
+    ` : '';
+
+    const footCompApos17Html = showCompApos17 ? `
+        <td class="py-3 px-2.5 text-center num-tabular bg-[var(--post-17h-soft)]/30">
+          <div class="whitespace-nowrap text-[11px]">
+            <span class="text-[var(--cand-13)] font-bold">${fmtNum.format(k.votos_cand_1_apos_17h)}</span>
+            <span class="text-[var(--text-muted)] mx-0.5">/</span>
+            <span class="text-[var(--cand-22)] font-bold">${fmtNum.format(k.votos_cand_2_apos_17h)}</span>
+          </div>
+          <div class="text-[10px] text-[var(--post-17h)] whitespace-nowrap">
+            Tot &gt;17h: ${fmtNum.format(k.votos_apos_17h)} <span class="text-[var(--text-secondary)]">(${k.pct_apos_17h}%)</span>
+          </div>
         </td>
         <td class="py-3 px-2.5 text-center num-tabular text-[11px] bg-[var(--post-17h-soft)]/30">
           <span class="text-[var(--cand-13)] font-bold">${fmtPct(k.pct_cand_1_apos_17h)}</span>
           <span class="text-[var(--text-muted)] mx-0.5">/</span>
           <span class="text-[var(--cand-22)] font-bold">${fmtPct(k.pct_cand_2_apos_17h)}</span>
+        </td>
+    ` : '';
+
+    const footApos17DetHtml = showApos17Det ? `
+        <td class="py-3 px-2.5 text-right num-tabular font-bold bg-[var(--post-17h-soft)]/30 text-[var(--cand-13)]">
+          ${fmtNum.format(k.votos_cand_1_apos_17h)}
+        </td>
+        <td class="py-3 px-2.5 text-right num-tabular font-bold bg-[var(--post-17h-soft)]/30 text-[var(--cand-22)]">
+          ${fmtNum.format(k.votos_cand_2_apos_17h)}
         </td>
     ` : '';
 
@@ -874,8 +920,10 @@ function renderStatesSummaryTable(dash) {
           ${fmtNum.format(footUrnas)}
         </td>
         ${footTotalHtml}
-        ${footAntes17Html}
-        ${footApos17Html}
+        ${footCompAntes17Html}
+        ${footAntes17DetHtml}
+        ${footCompApos17Html}
+        ${footApos17DetHtml}
         <td class="py-3 px-2.5 text-right num-tabular text-[var(--abst-hue)] font-bold">
           ${fmtPct(footTaxaAbst)} <span class="text-[10px] text-[var(--text-muted)] font-normal">(${fmtNum.format(footAbst)})</span>
         </td>
@@ -924,7 +972,7 @@ function renderUrnasTable(tableData) {
   if (tableData.rows.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="11" class="py-10 text-center text-[var(--text-secondary)]">
+        <td colspan="12" class="py-10 text-center text-[var(--text-secondary)]">
           Nenhuma seção eleitoral encontrada para esta combinação de filtros. Use o botão "Limpar" acima para restaurar.
         </td>
       </tr>
@@ -940,7 +988,7 @@ function renderUrnasTable(tableData) {
       lastUfRendered = r.uf;
       html += `
         <tr class="bg-[var(--bg-elevated)] border-y border-[var(--border-subtle)]">
-          <td colspan="11" class="py-2 px-3.5 font-bold text-[var(--bio-ok)] text-xs tracking-wide">
+          <td colspan="12" class="py-2 px-3.5 font-bold text-[var(--bio-ok)] text-xs tracking-wide">
             ESTADO: ${r.uf} — ${NOMES_UF[r.uf] || r.uf} · Região ${r.regiao}
           </td>
         </tr>
@@ -954,6 +1002,18 @@ function renderUrnasTable(tableData) {
     const diff1Color = r.diff_cand_1 < 0 ? 'text-[var(--post-17h)] font-bold' : 'text-[var(--bio-ok)]';
     const diff2Color = r.diff_cand_2 < 0 ? 'text-[var(--post-17h)] font-bold' : 'text-[var(--bio-ok)]';
     const minAtraso = Math.floor((r.segundos_apos_17h || 0) / 60);
+
+    const c1Antes17 = Math.max(0, (r.votos_cand_1 || 0) - (r.votos_cand_1_apos_17h || 0));
+    const c2Antes17 = Math.max(0, (r.votos_cand_2 || 0) - (r.votos_cand_2_apos_17h || 0));
+    const totAntes17 = c1Antes17 + c2Antes17;
+    const pct1Antes17 = totAntes17 > 0 ? ((c1Antes17 * 100) / totAntes17).toFixed(1).replace('.', ',') : '0,0';
+    const pct2Antes17 = totAntes17 > 0 ? ((c2Antes17 * 100) / totAntes17).toFixed(1).replace('.', ',') : '0,0';
+
+    const c1Apos17 = r.votos_cand_1_apos_17h || 0;
+    const c2Apos17 = r.votos_cand_2_apos_17h || 0;
+    const totApos17Nom = c1Apos17 + c2Apos17;
+    const pct1Apos17 = totApos17Nom > 0 ? ((c1Apos17 * 100) / totApos17Nom).toFixed(1).replace('.', ',') : '0,0';
+    const pct2Apos17 = totApos17Nom > 0 ? ((c2Apos17 * 100) / totApos17Nom).toFixed(1).replace('.', ',') : '0,0';
 
     html += `
       <tr data-id="${r.id}" class="urna-row hover:bg-[var(--bg-hover)] cursor-pointer transition">
@@ -981,12 +1041,29 @@ function renderUrnasTable(tableData) {
           </div>
           <div class="text-[10px] text-[var(--text-muted)]">${minAtraso > 0 ? `+${minAtraso} min pós-17h` : 'No horário'}</div>
         </td>
-        <td class="py-2.5 px-2.5 text-right num-tabular bg-[var(--post-17h-soft)]/10">
-          <div class="font-bold text-[var(--post-17h)]">${r.votos_apos_17h} votos &gt;17h</div>
-          <div class="text-[11px]">
-            <span class="text-[var(--cand-13)] font-semibold">13: ${r.votos_cand_1_apos_17h}</span>
-            <span class="text-[var(--text-muted)] mx-0.5">·</span>
-            <span class="text-[var(--cand-22)] font-semibold">22: ${r.votos_cand_2_apos_17h}</span>
+        <td class="py-2.5 px-2.5 text-center num-tabular bg-[var(--bio-ok-soft)]/10">
+          <div class="text-[11px] whitespace-nowrap font-bold">
+            <span class="text-[var(--cand-13)]">${c1Antes17}</span>
+            <span class="text-[var(--text-muted)] mx-0.5">/</span>
+            <span class="text-[var(--cand-22)]">${c2Antes17}</span>
+          </div>
+          <div class="text-[10px] whitespace-nowrap">
+            <span class="text-[var(--cand-13)]">${pct1Antes17}%</span>
+            <span class="text-[var(--text-muted)] mx-0.5">/</span>
+            <span class="text-[var(--cand-22)]">${pct2Antes17}%</span>
+          </div>
+        </td>
+        <td class="py-2.5 px-2.5 text-center num-tabular bg-[var(--post-17h-soft)]/10">
+          <div class="text-[11px] whitespace-nowrap font-bold">
+            <span class="text-[var(--cand-13)]">${c1Apos17}</span>
+            <span class="text-[var(--text-muted)] mx-0.5">/</span>
+            <span class="text-[var(--cand-22)]">${c2Apos17}</span>
+          </div>
+          <div class="text-[10px] whitespace-nowrap">
+            <span class="text-[var(--cand-13)]">${pct1Apos17}%</span>
+            <span class="text-[var(--text-muted)] mx-0.5">/</span>
+            <span class="text-[var(--cand-22)]">${pct2Apos17}%</span>
+            <span class="text-[var(--text-muted)] ml-0.5">(${r.votos_apos_17h})</span>
           </div>
         </td>
         <td class="py-2.5 px-2.5 text-right num-tabular">
