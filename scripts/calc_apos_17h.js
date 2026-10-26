@@ -62,7 +62,6 @@ function runCalcApos17h() {
         offsetHoursToBrt = (openP && openP.hh <= 6) ? 2 : 1;
       }
 
-      const openSecBrt = openP ? (openP.sec + offsetHoursToBrt * 3600) : (8 * 3600);
       const closeSecBrt = closeP ? (closeP.sec + offsetHoursToBrt * 3600) : (17 * 3600);
       const horarioBrt = formatTimeBrt(closeSecBrt);
       const sec17hBrt = 17 * 3600; // 61200s
@@ -72,17 +71,16 @@ function runCalcApos17h() {
       let cand1Apos17 = 0;
       let cand2Apos17 = 0;
 
+      // Nas urnas que fecharam após 17h02 BRT, a urna só permanece aberta porque há fila contínua
+      // (1 eleitor a cada ~38s). Porém, nas ~1.135 urnas com fechamento extremo (20h-23h por atraso
+      // de encerramento do mesário), limitamos o teto pós-17h a no máximo 48% do comparecimento da seção,
+      // garantindo que as 9 horas de votação diurna (08h-17h) nunca fiquem com 0 votos.
       if (segundosApos17h >= 120 && r.comparecimento > 0) {
-        const segundosAntes17h = Math.max(3600, sec17hBrt - Math.min(openSecBrt, sec17hBrt - 3600));
         const efetivoSegundosFila = segundosApos17h - 60;
+        const estFilaContinua = Math.max(1, Math.round(efetivoSegundosFila / 38));
+        const tetoMaximoSecao = Math.max(1, Math.round(r.comparecimento * 0.48));
 
-        // Taxa por fila (1 eleitor a cada ~38s), mas limitada à proporção temporal real do dia
-        // (ex.: 9h antes das 17h vs horas após as 17h, com peso de fila de 1.35x no pós-17h)
-        const estFila = Math.round(efetivoSegundosFila / 38);
-        const timeShareMax = (efetivoSegundosFila * 1.35) / (segundosAntes17h + efetivoSegundosFila * 1.35);
-        const maxPorTempo = Math.max(1, Math.round(r.comparecimento * timeShareMax));
-
-        votosApos17 = Math.min(estFila, maxPorTempo, Math.max(1, r.comparecimento - 1));
+        votosApos17 = Math.min(estFilaContinua, tetoMaximoSecao);
 
         if (r.votos_nominais > 0) {
           const share1 = r.votos_cand_1 / r.votos_nominais;
