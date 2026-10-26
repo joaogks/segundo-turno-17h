@@ -154,7 +154,18 @@
       </div>
 
       <div class="flex items-center gap-2.5">
-        <button id="btnExportCsv" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[var(--bio-ok)] hover:brightness-110 text-slate-950 font-bold text-xs transition">
+        <button id="btnOpenFontesModal" type="button" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] border border-[var(--bio-ok)]/40 text-[var(--bio-ok)] font-bold text-xs transition cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <line x1="10" y1="9" x2="8" y2="9"/>
+          </svg>
+          <span>Fontes</span>
+        </button>
+
+        <button id="btnExportCsv" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[var(--bio-ok)] hover:brightness-110 text-slate-950 font-bold text-xs transition cursor-pointer">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
@@ -822,6 +833,141 @@
             </thead>
             <tbody id="modalSchoolSiblingsBody" class="divide-y divide-[var(--border-subtle)]"></tbody>
           </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL POPUP DE FONTES OFICIAIS DO TSE 2026 -->
+  <div id="fontesModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+    <div class="surface-panel max-w-4xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-6 space-y-5 border-[var(--border-strong)]">
+      <div class="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
+        <div>
+          <span class="px-2.5 py-0.5 rounded text-[11px] num-tabular bg-[var(--bio-ok-soft)] text-[var(--bio-ok)] font-bold border border-[var(--bio-ok)]/30">
+            DADOS PÚBLICOS OFICIAIS · TSE 2026
+          </span>
+          <h3 class="text-lg font-bold text-[var(--text-primary)] mt-1.5">
+            Fontes Oficiais dos Dados — Eleição Presidencial 2026 (1º e 2º Turno)
+          </h3>
+          <p class="text-xs text-[var(--text-secondary)] mt-0.5">
+            Todos os registros deste painel foram extraídos diretamente dos servidores oficiais do Tribunal Superior Eleitoral (TSE).
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btnCopyFontesText" type="button" class="px-3 py-1.5 rounded-lg bg-[var(--bio-ok)] hover:brightness-110 text-slate-950 text-xs font-bold transition cursor-pointer">
+            Copiar Lista Completa
+          </button>
+          <button id="btnCloseFontesModal" type="button" class="px-3 py-1.5 rounded-lg bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] border border-[var(--border-subtle)] text-[var(--text-primary)] text-xs font-bold transition cursor-pointer">
+            Fechar
+          </button>
+        </div>
+      </div>
+
+      <!-- Bloco 1: Totalização Oficial do 2º Turno (Eleição 6258) e 1º Turno (Eleição 6257) -->
+      <div class="space-y-2.5">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-[var(--bio-ok)]">
+            1. API Oficial de Resultados e Totalização do TSE (JSONs Oficiais)
+          </h4>
+          <span class="text-[11px] num-tabular text-[var(--text-muted)]">resultados.tse.jus.br</span>
+        </div>
+        <p class="text-xs text-[var(--text-secondary)]">
+          Endpoints oficiais da Justiça Eleitoral referentes ao <strong>2º Turno Presidencial (25/10/2026 — Código TSE 6258)</strong> e ao <strong>1º Turno Presidencial (04/10/2026 — Código TSE 6257)</strong>:
+        </p>
+        <div class="border border-[var(--border-subtle)] rounded-lg bg-[var(--bg-canvas)] divide-y divide-[var(--border-subtle)] text-xs">
+          <div class="p-3 space-y-1">
+            <div class="font-bold text-[var(--text-primary)]">Totalização Nacional Consolidada — 2º Turno (25/10/2026):</div>
+            <div class="num-tabular text-[11px] text-[var(--bio-ok)] break-all select-all">https://resultados.tse.jus.br/oficial/ele2026/6258/dados/br/br-c0001-e006258-u.json</div>
+          </div>
+          <div class="p-3 space-y-1">
+            <div class="font-bold text-[var(--text-primary)]">Totalização Nacional Consolidada — 1º Turno (04/10/2026):</div>
+            <div class="num-tabular text-[11px] text-[var(--bio-ok)] break-all select-all">https://resultados.tse.jus.br/oficial/ele2026/6257/dados/br/br-c0001-e006257-u.json</div>
+          </div>
+          <div class="p-3 space-y-1">
+            <div class="font-bold text-[var(--text-primary)]">Índice Mestre de Municípios e 6.292 Zonas Eleitorais (2º Turno):</div>
+            <div class="num-tabular text-[11px] text-[var(--bio-ok)] break-all select-all">https://resultados.tse.jus.br/oficial/ele2026/6258/config/mun-e006258-cm.json</div>
+          </div>
+          <div class="p-3 space-y-1">
+            <div class="font-bold text-[var(--text-primary)]">Totalização por Estado (27 UFs + Exterior ZZ):</div>
+            <div class="num-tabular text-[11px] text-[var(--text-secondary)] break-all select-all">https://resultados.tse.jus.br/oficial/ele2026/6258/dados/&lt;uf&gt;/&lt;uf&gt;-c0001-e006258-u.json</div>
+            <div class="text-[11px] text-[var(--text-muted)]">Exemplos: <span class="num-tabular text-[var(--text-secondary)]">.../dados/sp/sp-c0001-e006258-u.json</span> · <span class="num-tabular text-[var(--text-secondary)]">.../dados/mg/mg-c0001-e006258-u.json</span> · <span class="num-tabular text-[var(--text-secondary)]">.../dados/ba/ba-c0001-e006258-u.json</span></div>
+          </div>
+          <div class="p-3 space-y-1">
+            <div class="font-bold text-[var(--text-primary)]">Totalização por Zona Eleitoral (Todas as 6.292 Zonas do Brasil):</div>
+            <div class="num-tabular text-[11px] text-[var(--text-secondary)] break-all select-all">https://resultados.tse.jus.br/oficial/ele2026/6258/dados/&lt;uf&gt;/&lt;uf&gt;&lt;cod_municipio&gt;-z&lt;zona&gt;-c0001-e006258-u.json</div>
+            <div class="num-tabular text-[11px] text-[var(--text-secondary)] break-all select-all">https://resultados.tse.jus.br/oficial/ele2026/6258/dados/&lt;uf&gt;/&lt;uf&gt;&lt;cod_municipio&gt;-c0001-e006258-u.json</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bloco 2: Portal de Dados Abertos (Boletins de Urna bweb) -->
+      <div class="space-y-2.5">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-[var(--post-17h)]">
+            2. Portal de Dados Abertos do TSE — Boletins de Urna (CSV / ZIP)
+          </h4>
+          <span class="text-[11px] num-tabular text-[var(--text-muted)]">cdn.tse.jus.br / dadosabertos.tse.jus.br</span>
+        </div>
+        <p class="text-xs text-[var(--text-secondary)]">
+          Base oficial de Boletins de Urna contendo as <strong>499.206+ seções eleitorais</strong> com código da seção (<code class="num-tabular text-[var(--text-primary)]">NR_SECAO</code>), escola (<code class="num-tabular text-[var(--text-primary)]">NR_LOCAL_VOTACAO</code>), número de série e modelo da urna (<code class="num-tabular text-[var(--text-primary)]">NR_URNA_EFETIVADA</code>), eleitores habilitados sem biometria (<code class="num-tabular text-[var(--text-primary)]">QT_ELEI_BIOM_SEM_HABILITACAO</code>) e timestamps exatos de abertura e encerramento (<code class="num-tabular text-[var(--text-primary)]">DT_ABERTURA</code> e <code class="num-tabular text-[var(--text-primary)]">DT_ENCERRAMENTO</code>):
+        </p>
+        <div class="border border-[var(--border-subtle)] rounded-lg bg-[var(--bg-canvas)] p-3 space-y-2 text-xs">
+          <div>
+            <span class="font-bold text-[var(--text-primary)]">Página Oficial no Portal Dados Abertos:</span>
+            <div class="num-tabular text-[11px] text-[var(--bio-ok)] break-all select-all mt-0.5">https://dadosabertos.tse.jus.br/dataset/resultados-2026-boletim-de-urna</div>
+          </div>
+          <div class="pt-2 border-t border-[var(--border-subtle)]">
+            <span class="font-bold text-[var(--text-primary)]">Pacotes Oficiais por Estado (28 arquivos .ZIP na CDN do TSE):</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mt-2 num-tabular text-[11px] text-[var(--text-secondary)] max-h-44 overflow-y-auto custom-scrollbar pr-1">
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_AC_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_AL_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_AM_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_AP_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_BA_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_CE_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_DF_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_ES_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_GO_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_MA_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_MG_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_MS_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_MT_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_PA_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_PB_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_PE_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_PI_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_PR_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_RJ_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_RN_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_RO_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_RR_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_RS_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_SC_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_SE_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_SP_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_TO_051020261403.zip</div>
+              <div class="select-all truncate">https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_ZZ_051020261403.zip</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bloco 3: Resumo dos Totais Oficiais Auditados -->
+      <div class="border border-[var(--border-subtle)] rounded-lg bg-[var(--bg-canvas)] p-3.5 text-xs space-y-1.5">
+        <div class="font-bold text-[var(--text-primary)]">Totais Oficiais Consolidados (100,00% das Seções Totalizadas):</div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 num-tabular text-[11px] pt-1">
+          <div class="p-2 rounded bg-[var(--bg-surface)] border border-[var(--border-subtle)]">
+            <span class="text-[var(--text-muted)] block">Lula (13) — 1ºT &rarr; 2ºT</span>
+            <strong class="text-[var(--cand-13)]">53.879.538 &rarr; 64.256.232 (51,79%)</strong>
+          </div>
+          <div class="p-2 rounded bg-[var(--bg-surface)] border border-[var(--border-subtle)]">
+            <span class="text-[var(--text-muted)] block">Flávio Bolsonaro (22) — 1ºT &rarr; 2ºT</span>
+            <strong class="text-[var(--cand-22)]">56.104.503 &rarr; 59.826.041 (48,21%)</strong>
+          </div>
+          <div class="p-2 rounded bg-[var(--bg-surface)] border border-[var(--border-subtle)]">
+            <span class="text-[var(--text-muted)] block">Comparecimento Total 2ºT</span>
+            <strong class="text-[var(--bio-ok)]">128.236.074 votos (80,78%)</strong>
+          </div>
         </div>
       </div>
     </div>

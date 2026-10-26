@@ -1375,6 +1375,74 @@ function bindEvents() {
   document.getElementById('btnCloseUrnaModal').addEventListener('click', () => {
     document.getElementById('urnaDetailModal').classList.add('hidden');
   });
+
+  const fontesModal = document.getElementById('fontesModal');
+  const btnOpenFontes = document.getElementById('btnOpenFontesModal');
+  const btnCloseFontes = document.getElementById('btnCloseFontesModal');
+  const btnCopyFontes = document.getElementById('btnCopyFontesText');
+
+  if (btnOpenFontes && fontesModal) {
+    btnOpenFontes.addEventListener('click', () => {
+      fontesModal.classList.remove('hidden');
+    });
+  }
+
+  if (btnCloseFontes && fontesModal) {
+    btnCloseFontes.addEventListener('click', () => {
+      fontesModal.classList.add('hidden');
+    });
+  }
+
+  if (fontesModal) {
+    fontesModal.addEventListener('click', (e) => {
+      if (e.target === fontesModal) {
+        fontesModal.classList.add('hidden');
+      }
+    });
+  }
+
+  if (btnCopyFontes) {
+    btnCopyFontes.addEventListener('click', async () => {
+      const textoFontes = [
+        'FONTES OFICIAIS DOS DADOS — ELEIÇÃO PRESIDENCIAL 2026 (TSE):',
+        '',
+        '1. Totalização Oficial Nacional do 2º Turno (25/10/2026 — Código TSE 6258):',
+        'https://resultados.tse.jus.br/oficial/ele2026/6258/dados/br/br-c0001-e006258-u.json',
+        '',
+        '2. Totalização Oficial Nacional do 1º Turno (04/10/2026 — Código TSE 6257):',
+        'https://resultados.tse.jus.br/oficial/ele2026/6257/dados/br/br-c0001-e006257-u.json',
+        '',
+        '3. Índice Oficial de Municípios e 6.292 Zonas Eleitorais do 2º Turno:',
+        'https://resultados.tse.jus.br/oficial/ele2026/6258/config/mun-e006258-cm.json',
+        '',
+        '4. Totalização por Estado (27 UFs + Exterior ZZ):',
+        'https://resultados.tse.jus.br/oficial/ele2026/6258/dados/<uf>/<uf>-c0001-e006258-u.json',
+        '',
+        '5. Totalização por Zona Eleitoral (6.292 Zonas no Brasil):',
+        'https://resultados.tse.jus.br/oficial/ele2026/6258/dados/<uf>/<uf><cod_municipio>-z<zona>-c0001-e006258-u.json',
+        '',
+        '6. Portal de Dados Abertos do TSE — Boletins de Urna 2026 (CSV / ZIP das 28 UFs):',
+        'https://dadosabertos.tse.jus.br/dataset/resultados-2026-boletim-de-urna',
+        'https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/buweb/bweb_1t_<UF>_051020261403.zip'
+      ].join('\n');
+
+      try {
+        await navigator.clipboard.writeText(textoFontes);
+        const originalText = btnCopyFontes.textContent;
+        btnCopyFontes.textContent = 'Copiado!';
+        setTimeout(() => {
+          btnCopyFontes.textContent = originalText;
+        }, 2000);
+      } catch (_) {}
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.getElementById('urnaDetailModal')?.classList.add('hidden');
+      document.getElementById('fontesModal')?.classList.add('hidden');
+    }
+  });
 }
 
 window.addEventListener('DOMContentLoaded', initApp);
